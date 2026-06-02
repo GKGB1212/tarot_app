@@ -1,0 +1,76 @@
+:root {
+  /* bảng màu huyền bí: chàm – tím – nhũ vàng */
+  --bg-0: #0a0814;
+  --bg-1: #13102b;
+  --bg-2: #1b1640;
+  --panel: rgba(30, 24, 64, 0.55);
+  --panel-solid: #1a1538;
+  --border: rgba(196, 181, 253, 0.18);
+  --border-strong: rgba(196, 181, 253, 0.4);
+  --text: #ece7ff;
+  --muted: #a39bc4;
+  --gold: #f4cd6b;
+  --gold-soft: #fde68a;
+  --violet: #a78bfa;
+  --violet-deep: #6d28d9;
+  --rose: #fb7baa;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+
+  font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  color-scheme: dark;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(1100px 700px at 50% -10%, #2a1f5c 0%, transparent 60%),
+    radial-gradient(900px 600px at 90% 10%, #3b1d57 0%, transparent 55%),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
+  background-attachment: fixed;
+  color: var(--text);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: 'Playfair Display', 'Cormorant Garamond', serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input {
+  font-family: inherit;
+}
+
+::selection {
+  background: rgba(167, 139, 250, 0.4);
+}
+
+/* thanh cuộn */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.3);
+  border-radius: 10px;
+}
