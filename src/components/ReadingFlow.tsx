@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { SPREADS, type Spread } from '../data/spreads'
 import { freshDeck, makeRng, randomSeed, riffleShuffle, yesNoVerdict, type DrawnCard } from '../lib/shuffle'
 import { saveReading, type ReadingRecord } from '../lib/storage'
@@ -25,8 +25,17 @@ export function ReadingFlow() {
   const [picked, setPicked] = useState<number[]>([])
   const [revealed, setRevealed] = useState<boolean[]>([])
   const [saved, setSaved] = useState(false)
+  const [fanZoom, setFanZoom] = useState(0.72) // cỡ lá ở bước rút bài (kéo thanh để chỉnh)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   const need = spread.positions.length
+
+  // khi vào bước rút bài hoặc đổi cỡ lá, tự cuộn quạt về chính giữa
+  useEffect(() => {
+    if (stage !== 'pick') return
+    const el = scrollRef.current
+    if (el) el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2
+  }, [stage, fanZoom])
   // các lá đã rút, theo đúng thứ tự vị trí của kiểu trải
   const drawn: DrawnCard[] = picked.map((i) => deck[i])
 
@@ -208,26 +217,59 @@ export function ReadingFlow() {
         <section className="panel center-col">
           <h2 className="section-title">Chọn {need} lá bằng trực giác</h2>
           <p className="counter-pill">{picked.length}/{need} lá đã chọn</p>
-          <div className="fan" style={{ ['--n' as string]: deck.length }}>
-            {deck.map((d, i) => {
-              const order = picked.indexOf(i)
-              const isPicked = order !== -1
-              return (
-                <button
-                  type="button"
-                  key={d.card.id}
-                  className={`fan-card ${isPicked ? 'picked' : ''}`}
-                  style={{ ['--idx' as string]: i }}
-                  onClick={() => pickCard(i)}
-                  disabled={isPicked || picked.length >= need}
-                  aria-label={`Lá thứ ${i + 1}`}
-                >
-                  <CardBackMini />
-                  {isPicked && <span className="pick-order">{order + 1}</span>}
-                </button>
-              )
-            })}
+
+          <div className="zoom-row">
+            <span className="muted small">Cỡ lá</span>
+            <button
+              type="button"
+              className="zoom-btn"
+              onClick={() => setFanZoom((z) => Math.max(0.45, +(z - 0.1).toFixed(2)))}
+              aria-label="Thu nhỏ lá"
+            >−</button>
+            <input
+              className="zoom-range"
+              type="range"
+              min={0.45}
+              max={1.25}
+              step={0.01}
+              value={fanZoom}
+              onChange={(e) => setFanZoom(+e.target.value)}
+              aria-label="Cỡ lá bài"
+            />
+            <button
+              type="button"
+              className="zoom-btn"
+              onClick={() => setFanZoom((z) => Math.min(1.25, +(z + 0.1).toFixed(2)))}
+              aria-label="Phóng to lá"
+            >+</button>
           </div>
+
+          <div className="fan-scroll" ref={scrollRef}>
+            <div className="fan-sizer" style={{ width: 760 * fanZoom, height: 250 * fanZoom }}>
+              <div className="fan" style={{ ['--n' as string]: deck.length, ['--fan-zoom' as string]: fanZoom }}>
+                {deck.map((d, i) => {
+                  const order = picked.indexOf(i)
+                  const isPicked = order !== -1
+                  return (
+                    <button
+                      type="button"
+                      key={d.card.id}
+                      className={`fan-card ${isPicked ? 'picked' : ''}`}
+                      style={{ ['--idx' as string]: i }}
+                      onClick={() => pickCard(i)}
+                      disabled={isPicked || picked.length >= need}
+                      aria-label={`Lá thứ ${i + 1}`}
+                    >
+                      <CardBackMini />
+                      {isPicked && <span className="pick-order">{order + 1}</span>}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+          <p className="muted small fan-hint">Vuốt ngang để xem thêm lá · kéo thanh trên để chỉnh cỡ</p>
+
           <div className="actions center">
             <button type="button" className="btn ghost" onClick={() => setPicked([])} disabled={!picked.length}>
               Chọn lại
