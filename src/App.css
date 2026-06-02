@@ -406,11 +406,13 @@
   margin-bottom: 8px;
 }
 .fan {
+  /* tự co theo bề rộng cửa sổ để luôn vừa khít, không tràn ngang trên mobile */
+  --fan-scale: clamp(0.42, calc((100vw - 44px) / 760px), 1);
   position: relative;
   width: 100%;
-  height: 250px;
+  height: calc(250px * var(--fan-scale));
   margin: 18px 0 4px;
-  transform: scale(var(--fan-scale, 1));
+  transform: scale(var(--fan-scale));
   transform-origin: center top;
 }
 .fan::before {
@@ -812,18 +814,48 @@
 
 /* ============================ Responsive ============================ */
 @media (max-width: 720px) {
-  .fan { --fan-scale: 0.66; height: 250px; }
-  .board { height: 460px; --card-w: 72px; }
+  .app { padding: 0 12px 56px; }
+  .board { height: 440px; --card-w: 66px; }
   .card-detail { grid-template-columns: 1fr; }
   .detail-art { width: 150px; margin: 0 auto; }
-  .interp { flex-direction: column; }
-  .interp-mini { width: 80px; }
-  .panel { padding: 20px 16px; }
-  .brand h1 { font-size: 23px; }
-  .tab span:not(.tab-icon) { display: none; }
-  .tab { padding: 12px; }
+  .interp { flex-direction: column; gap: 12px; }
+  .interp-mini { width: 76px; }
+  .panel { padding: 20px 14px; }
+  .section-title { font-size: 20px; }
+
+  /* header gọn lại */
+  .topbar { padding: 16px 2px 10px; gap: 8px; }
+  .brand { gap: 10px; }
+  .brand-mark { font-size: 28px; }
+  .brand h1 { font-size: 21px; }
+  .brand p { font-size: 10px; letter-spacing: 0.12em; }
+  .topbar > .btn { padding: 8px 12px; font-size: 12px; }
+
+  /* tab: giữ cả icon + chữ, chỉ thu nhỏ */
+  .tabbar { gap: 4px; padding: 5px; top: 6px; }
+  .tab { padding: 9px 6px; font-size: 13px; gap: 5px; flex-direction: column; }
+  .tab-icon { font-size: 18px; }
+
+  /* nút bấm dễ chạm hơn */
+  .btn { padding: 12px 18px; }
+  .actions { gap: 10px; flex-wrap: wrap; }
 }
+
 @media (max-width: 460px) {
-  .fan { --fan-scale: 0.5; height: 200px; }
   .detail-cols { grid-template-columns: 1fr; }
+  .spread-grid { grid-template-columns: 1fr; }
+  .board { height: 400px; --card-w: 58px; }
+  .slot-label { font-size: 10px; max-width: 78px; }
+  .stepper { gap: 5px; }
+  .stepper li { font-size: 0; gap: 0; }      /* chỉ hiện chấm số trên màn rất nhỏ */
+  .stepper li::after { width: 12px; }
+  .stepper .dot { font-size: 12px; }
+  .copy-actions .btn { flex: 1 1 auto; justify-content: center; }
+  .history-del { position: static; align-self: flex-end; margin: 0 14px 12px auto; }
+}
+
+/* màn hình cảm ứng: bỏ hiệu ứng hover gây "dính" trạng thái khi chạm */
+@media (hover: none) {
+  .fan-card:hover:not(:disabled) { transform: rotate(var(--rot)); box-shadow: none; }
+  .lib-card:hover { transform: none; filter: none; }
 }

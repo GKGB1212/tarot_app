@@ -11,7 +11,7 @@ type Tab = 'reading' | 'library' | 'history'
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'reading', label: 'Bói bài', icon: '🔮' },
   { id: 'library', label: 'Thư viện', icon: '📖' },
-  { id: 'history', label: 'Lịch sử', icon: '🕮' },
+  { id: 'history', label: 'Lịch sử', icon: '📜' },
 ]
 
 const TAB_IDS: Tab[] = ['reading', 'library', 'history']

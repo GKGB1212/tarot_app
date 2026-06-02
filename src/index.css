@@ -40,6 +40,7 @@ body {
     linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
   background-attachment: fixed;
   color: var(--text);
+  overflow-x: hidden; /* tránh cuộn ngang do hiệu ứng tràn lề trên mobile */
 }
 
 h1,
