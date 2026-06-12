@@ -45,6 +45,20 @@ export const SPREADS: Spread[] = [
     ],
   },
   {
+    id: 'mindbodyspirit',
+    name: 'Tâm – Thân – Trí – Cân Bằng Nội Tại',
+    tagline: 'Ba tầng của bạn',
+    description:
+      'Ba lá soi chiếu sự cân bằng giữa tâm trí, thể chất và tâm linh — giúp bạn nhận ra tầng nào đang cần được lắng nghe và chăm sóc.',
+    difficulty: 'Cơ bản',
+    icon: '☯️',
+    positions: [
+      { label: 'Tâm trí', meaning: 'Suy nghĩ, niềm tin & trạng thái tinh thần lúc này', x: 22, y: 50 },
+      { label: 'Thể chất', meaning: 'Cơ thể, sức khoẻ & đời sống vật chất', x: 50, y: 50 },
+      { label: 'Tâm linh', meaning: 'Cảm xúc sâu, trực giác & kết nối tâm hồn', x: 78, y: 50 },
+    ],
+  },
+  {
     id: 'love',
     name: 'Tình Yêu – Soi Chiếu Mối Quan Hệ',
     tagline: 'Trái tim hai phía',
@@ -72,6 +86,57 @@ export const SPREADS: Spread[] = [
       { label: 'Lá 1', meaning: 'Năng lượng thứ nhất', x: 25, y: 50 },
       { label: 'Lá 2', meaning: 'Năng lượng thứ hai', x: 50, y: 50 },
       { label: 'Lá 3', meaning: 'Năng lượng thứ ba', x: 75, y: 50 },
+    ],
+  },
+  {
+    id: 'career',
+    name: 'Sự Nghiệp & Tài Chính – Con Đường Công Danh',
+    tagline: 'Công danh & tiền bạc',
+    description:
+      'Năm lá theo hình chữ thập soi chiếu công việc và tài chính: hiện trạng, trở ngại, thế mạnh, nền tảng ngầm và hướng phát triển sắp tới.',
+    difficulty: 'Trung cấp',
+    icon: '💼',
+    positions: [
+      { label: 'Hướng đi', meaning: 'Cơ hội & lời khuyên cho chặng đường phía trước', x: 50, y: 16 },
+      { label: 'Trở ngại', meaning: 'Khó khăn hoặc điều đang kìm hãm bạn', x: 18, y: 50 },
+      { label: 'Hiện trạng', meaning: 'Tình hình công việc & tài chính hiện tại', x: 50, y: 50 },
+      { label: 'Thế mạnh', meaning: 'Lợi thế & nguồn lực bạn đang nắm trong tay', x: 82, y: 50 },
+      { label: 'Nền tảng', meaning: 'Gốc rễ & yếu tố ngầm đang chi phối tình hình', x: 50, y: 84 },
+    ],
+  },
+  {
+    id: 'crossroads',
+    name: 'Ngã Ba Đường – Lựa Chọn Giữa Hai Lối',
+    tagline: 'Phân vân A hay B',
+    description:
+      'Sáu lá so sánh hai con đường khi bạn đang phân vân: trải nghiệm và kết quả của mỗi hướng, kèm một lời khuyên để chọn lựa sáng suốt.',
+    difficulty: 'Trung cấp',
+    icon: '🛤️',
+    positions: [
+      { label: 'A · Kết quả', meaning: 'Kết cục có khả năng nếu theo con đường A', x: 20, y: 14 },
+      { label: 'B · Kết quả', meaning: 'Kết cục có khả năng nếu theo con đường B', x: 80, y: 14 },
+      { label: 'Lời khuyên', meaning: 'Điều cần cân nhắc để đưa ra lựa chọn sáng suốt', x: 50, y: 40 },
+      { label: 'A · Hướng đi', meaning: 'Năng lượng & trải nghiệm nếu chọn con đường A', x: 20, y: 52 },
+      { label: 'B · Hướng đi', meaning: 'Năng lượng & trải nghiệm nếu chọn con đường B', x: 80, y: 52 },
+      { label: 'Hiện tại', meaning: 'Tâm thế & tình thế của bạn khi đứng trước lựa chọn', x: 50, y: 84 },
+    ],
+  },
+  {
+    id: 'horseshoe',
+    name: 'Móng Ngựa – Phân Tích Bảy Lá',
+    tagline: 'Nhìn rộng một vấn đề',
+    description:
+      'Bảy lá xếp thành vòng cung móng ngựa: quá khứ, hiện tại, ẩn tình, trở ngại, ngoại cảnh, lời khuyên và kết quả — cái nhìn toàn diện mà nhẹ nhàng hơn Thập Tự Celtic.',
+    difficulty: 'Trung cấp',
+    icon: '🧲',
+    positions: [
+      { label: 'Quá khứ', meaning: 'Ảnh hưởng từ quá khứ vẫn còn tác động', x: 10, y: 75 },
+      { label: 'Hiện tại', meaning: 'Tình thế & năng lượng ngay lúc này', x: 18, y: 42 },
+      { label: 'Ẩn tình', meaning: 'Yếu tố ngầm, điều chưa lộ ra đang chi phối', x: 33, y: 18 },
+      { label: 'Trở ngại', meaning: 'Chướng ngại trung tâm cần vượt qua', x: 50, y: 10 },
+      { label: 'Ngoại cảnh', meaning: 'Thái độ người khác & môi trường xung quanh', x: 67, y: 18 },
+      { label: 'Lời khuyên', meaning: 'Hướng hành động nên theo', x: 82, y: 42 },
+      { label: 'Kết quả', meaning: 'Kết cục có khả năng nhất nếu nghe theo lời khuyên', x: 90, y: 75 },
     ],
   },
   {

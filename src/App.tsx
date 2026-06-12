@@ -4,6 +4,7 @@ import { ReadingFlow } from './components/ReadingFlow'
 import { Library } from './components/Library'
 import { History } from './components/History'
 import { Guide } from './components/Guide'
+import { isMuted, toggleMuted, unlockAudio } from './lib/sound'
 import './App.css'
 
 type Tab = 'reading' | 'library' | 'history'
@@ -24,10 +25,16 @@ function initialTab(): Tab {
 function App() {
   const [tab, setTab] = useState<Tab>(initialTab)
   const [guideOpen, setGuideOpen] = useState(false)
+  const [muted, setMuted] = useState(isMuted)
 
   function changeTab(t: Tab) {
     setTab(t)
     window.location.hash = t
+  }
+
+  function onToggleSound() {
+    unlockAudio() // đảm bảo âm thanh mở khoá ngay khi bật
+    setMuted(toggleMuted())
   }
 
   return (
@@ -42,9 +49,20 @@ function App() {
             <p>Tarot · soi chiếu nội tâm</p>
           </div>
         </div>
-        <button type="button" className="btn ghost sm" onClick={() => setGuideOpen(true)}>
-          ✦ Tìm hiểu Tarot
-        </button>
+        <div className="topbar-actions">
+          <button
+            type="button"
+            className={`sound-toggle ${muted ? 'is-muted' : ''}`}
+            onClick={onToggleSound}
+            aria-label={muted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+            title={muted ? 'Bật âm thanh huyền bí' : 'Tắt âm thanh'}
+          >
+            {muted ? '🔇' : '🔊'}
+          </button>
+          <button type="button" className="btn ghost sm" onClick={() => setGuideOpen(true)}>
+            ✦ Tìm hiểu Tarot
+          </button>
+        </div>
       </header>
 
       <nav className="tabbar">

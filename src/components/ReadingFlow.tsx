@@ -7,11 +7,18 @@ import { FlipCard } from './FlipCard'
 import { CardFace } from './Card'
 import { CopyResult } from './CopyResult'
 import { buildGeminiPrompt } from '../lib/share'
+import { unlockAudio, playShuffle, playPick, playReveal } from '../lib/sound'
 
 type Stage = 'select' | 'shuffle' | 'pick' | 'result'
+type PickLayout = 'fan' | 'rows'
 
 /** Số lượt xào tối thiểu trước khi được rút (một riffle chưa trộn đều). */
 const MIN_SHUFFLES = 3
+
+// Chế độ "hàng ngang": chia bộ bài làm 2 hàng, các lá xếp chồng mép lên nhau
+// và tự co theo bề rộng màn hình nên luôn vừa khít, không cần cuộn.
+const ROW_COUNT = 2
+const ROW_CARD_W = 54 // bề ngang một lá (px), khớp với .row-card trong CSS
 
 export function ReadingFlow() {
   const [stage, setStage] = useState<Stage>('select')
@@ -26,16 +33,39 @@ export function ReadingFlow() {
   const [revealed, setRevealed] = useState<boolean[]>([])
   const [saved, setSaved] = useState(false)
   const [fanZoom, setFanZoom] = useState(0.72) // cỡ lá ở bước rút bài (kéo thanh để chỉnh)
+  const [pickLayout, setPickLayout] = useState<PickLayout>('fan') // cách bày bài để chọn
+  const [rowStep, setRowStep] = useState(18) // khoảng cách tâm-đến-tâm giữa 2 lá kề (hàng ngang)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const rowsRef = useRef<HTMLDivElement>(null)
 
   const need = spread.positions.length
+  const perRow = Math.ceil(deck.length / ROW_COUNT)
 
   // khi vào bước rút bài hoặc đổi cỡ lá, tự cuộn quạt về chính giữa
   useEffect(() => {
-    if (stage !== 'pick') return
+    if (stage !== 'pick' || pickLayout !== 'fan') return
     const el = scrollRef.current
     if (el) el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2
-  }, [stage, fanZoom])
+  }, [stage, fanZoom, pickLayout])
+
+  // hàng ngang: đo bề rộng khung và tính độ chồng để cả hàng vừa khít, không cuộn
+  useEffect(() => {
+    if (stage !== 'pick' || pickLayout !== 'rows') return
+    const el = rowsRef.current
+    if (!el) return
+    const compute = () => {
+      const avail = el.clientWidth - 6
+      // tối đa = bề ngang lá + 6px (chồng nhẹ); nếu thiếu chỗ thì chồng sâu hơn cho vừa
+      const maxStep = ROW_CARD_W + 6
+      const fit = (avail - ROW_CARD_W) / Math.max(1, perRow - 1)
+      setRowStep(Math.max(7, Math.min(maxStep, fit)))
+    }
+    compute()
+    const ro = new ResizeObserver(compute)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [stage, pickLayout, perRow])
+
   // các lá đã rút, theo đúng thứ tự vị trí của kiểu trải
   const drawn: DrawnCard[] = picked.map((i) => deck[i])
 
@@ -47,6 +77,7 @@ export function ReadingFlow() {
   }
 
   function startShuffle() {
+    unlockAudio() // mở khoá âm thanh ngay trong cú chạm đầu tiên
     const s = randomSeed()
     setSeed(s)
     setDeck(freshDeck(makeRng(s))) // bộ bài nguyên cây, sẽ được xào dần
@@ -57,6 +88,7 @@ export function ReadingFlow() {
   function doShuffle() {
     // mỗi lần bấm = một lượt riffle, trộn tiếp lên thứ tự hiện tại (xào tích luỹ)
     setIsShuffling(true)
+    playShuffle() // tiếng xóc bài đồng bộ với hoạt ảnh
     const s = randomSeed()
     setSeed(s)
     setDeck((d) => riffleShuffle(d, makeRng(s)))
@@ -67,6 +99,7 @@ export function ReadingFlow() {
 
   function pickCard(i: number) {
     if (picked.includes(i) || picked.length >= need) return
+    playPick(deck[i].card.id) // mỗi lá một nốt riêng — kết nối năng lượng
     setPicked((p) => [...p, i])
   }
 
@@ -76,10 +109,16 @@ export function ReadingFlow() {
   }
 
   function reveal(idx: number) {
+    if (revealed[idx]) return
+    playReveal(drawn[idx].card.id)
     setRevealed((r) => r.map((v, i) => (i === idx ? true : v)))
   }
 
   function revealAll() {
+    // lật lần lượt với độ trễ nhỏ để các nốt ngân nối tiếp như một hợp âm rải
+    drawn.forEach((d, i) => {
+      if (!revealed[i]) window.setTimeout(() => playReveal(d.card.id), i * 180)
+    })
     setRevealed(new Array(need).fill(true))
   }
 
@@ -218,57 +257,116 @@ export function ReadingFlow() {
           <h2 className="section-title">Chọn {need} lá bằng trực giác</h2>
           <p className="counter-pill">{picked.length}/{need} lá đã chọn</p>
 
-          <div className="zoom-row">
-            <span className="muted small">Cỡ lá</span>
+          <div className="layout-switch" aria-label="Cách bày bài">
             <button
               type="button"
-              className="zoom-btn"
-              onClick={() => setFanZoom((z) => Math.max(0.45, +(z - 0.1).toFixed(2)))}
-              aria-label="Thu nhỏ lá"
-            >−</button>
-            <input
-              className="zoom-range"
-              type="range"
-              min={0.45}
-              max={1.25}
-              step={0.01}
-              value={fanZoom}
-              onChange={(e) => setFanZoom(+e.target.value)}
-              aria-label="Cỡ lá bài"
-            />
+              className={pickLayout === 'fan' ? 'active' : ''}
+              onClick={() => setPickLayout('fan')}
+            >
+              🪭 Quạt tròn
+            </button>
             <button
               type="button"
-              className="zoom-btn"
-              onClick={() => setFanZoom((z) => Math.min(1.25, +(z + 0.1).toFixed(2)))}
-              aria-label="Phóng to lá"
-            >+</button>
+              className={pickLayout === 'rows' ? 'active' : ''}
+              onClick={() => setPickLayout('rows')}
+            >
+              ▦ Hàng ngang
+            </button>
           </div>
 
-          <div className="fan-scroll" ref={scrollRef}>
-            <div className="fan-sizer" style={{ width: 760 * fanZoom, height: 250 * fanZoom }}>
-              <div className="fan" style={{ ['--n' as string]: deck.length, ['--fan-zoom' as string]: fanZoom }}>
-                {deck.map((d, i) => {
-                  const order = picked.indexOf(i)
-                  const isPicked = order !== -1
+          {pickLayout === 'fan' && (
+            <div className="zoom-row">
+              <span className="muted small">Cỡ lá</span>
+              <button
+                type="button"
+                className="zoom-btn"
+                onClick={() => setFanZoom((z) => Math.max(0.45, +(z - 0.1).toFixed(2)))}
+                aria-label="Thu nhỏ lá"
+              >−</button>
+              <input
+                className="zoom-range"
+                type="range"
+                min={0.45}
+                max={1.25}
+                step={0.01}
+                value={fanZoom}
+                onChange={(e) => setFanZoom(+e.target.value)}
+                aria-label="Cỡ lá bài"
+              />
+              <button
+                type="button"
+                className="zoom-btn"
+                onClick={() => setFanZoom((z) => Math.min(1.25, +(z + 0.1).toFixed(2)))}
+                aria-label="Phóng to lá"
+              >+</button>
+            </div>
+          )}
+
+          {pickLayout === 'fan' ? (
+            <>
+              <div className="fan-scroll" ref={scrollRef}>
+                <div className="fan-sizer" style={{ width: 760 * fanZoom, height: 250 * fanZoom }}>
+                  <div className="fan" style={{ ['--n' as string]: deck.length, ['--fan-zoom' as string]: fanZoom }}>
+                    {deck.map((d, i) => {
+                      const order = picked.indexOf(i)
+                      const isPicked = order !== -1
+                      return (
+                        <button
+                          type="button"
+                          key={d.card.id}
+                          className={`fan-card ${isPicked ? 'picked' : ''}`}
+                          style={{ ['--idx' as string]: i }}
+                          onClick={() => pickCard(i)}
+                          disabled={isPicked || picked.length >= need}
+                          aria-label={`Lá thứ ${i + 1}`}
+                        >
+                          <CardBackMini />
+                          {isPicked && <span className="pick-order">{order + 1}</span>}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+              <p className="muted small fan-hint">Vuốt ngang để xem thêm lá · kéo thanh trên để chỉnh cỡ</p>
+            </>
+          ) : (
+            <>
+              <div className="rows-stack" ref={rowsRef}>
+                {Array.from({ length: ROW_COUNT }, (_, r) => {
+                  const start = r * perRow
+                  const items = deck.slice(start, start + perRow)
                   return (
-                    <button
-                      type="button"
-                      key={d.card.id}
-                      className={`fan-card ${isPicked ? 'picked' : ''}`}
-                      style={{ ['--idx' as string]: i }}
-                      onClick={() => pickCard(i)}
-                      disabled={isPicked || picked.length >= need}
-                      aria-label={`Lá thứ ${i + 1}`}
-                    >
-                      <CardBackMini />
-                      {isPicked && <span className="pick-order">{order + 1}</span>}
-                    </button>
+                    <div className="row-line" key={r}>
+                      {items.map((d, j) => {
+                        const i = start + j
+                        const order = picked.indexOf(i)
+                        const isPicked = order !== -1
+                        return (
+                          <button
+                            type="button"
+                            key={d.card.id}
+                            className={`row-card ${isPicked ? 'picked' : ''}`}
+                            style={{
+                              marginLeft: j === 0 ? 0 : rowStep - ROW_CARD_W,
+                              zIndex: isPicked ? 200 : j,
+                            }}
+                            onClick={() => pickCard(i)}
+                            disabled={isPicked || picked.length >= need}
+                            aria-label={`Lá thứ ${i + 1}`}
+                          >
+                            <CardBackMini />
+                            {isPicked && <span className="pick-order">{order + 1}</span>}
+                          </button>
+                        )
+                      })}
+                    </div>
                   )
                 })}
               </div>
-            </div>
-          </div>
-          <p className="muted small fan-hint">Vuốt ngang để xem thêm lá · kéo thanh trên để chỉnh cỡ</p>
+              <p className="muted small fan-hint">Hai hàng xếp chồng · chạm vào lá để chọn</p>
+            </>
+          )}
 
           <div className="actions center">
             <button type="button" className="btn ghost" onClick={() => setPicked([])} disabled={!picked.length}>
